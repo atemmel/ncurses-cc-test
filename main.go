@@ -15,8 +15,8 @@ func init() {
 func redraw(table *Table) {
 	termbox.Clear(termbox.ColorWhite, termbox.ColorBlack)
 	drawHeader()
-	mvprintf(5, 5, "kör! %s", "kobra")
-	w, h := termbox.Size()
+	//w, h := termbox.Size()
+	w, h := 40, 6
 	table.Draw(0, 1, w, h)
 	termbox.Flush()
 }
@@ -65,6 +65,47 @@ func main() {
 					Timestamp: time.Now(),
 					Content: "papaya",
 				},
+				{
+					Timestamp: time.Now(),
+					Content: "papaya",
+				},
+				{
+					Timestamp: time.Now(),
+					Content: "papaya",
+				},
+				{
+					Timestamp: time.Now(),
+					Content: "papaya",
+				},
+				{
+					Timestamp: time.Now(),
+					Content: "papaya",
+				},
+			},
+		},
+		{
+			Title: "Böcker",
+			Cells: []Cell{
+				{
+					Timestamp: time.Now(),
+					Content: "Illiaden",
+				},
+				{
+					Timestamp: time.Now(),
+					Content: "Odysséen",
+				},
+				{
+					Timestamp: time.Now(),
+					Content: "Håkan Bråkan och Roboten Rex",
+				},
+				{
+					Timestamp: time.Now(),
+					Content: "Horus Rising",
+				},
+				{
+					Timestamp: time.Now(),
+					Content: "Twilight",
+				},
 			},
 		},
 	})
@@ -78,17 +119,34 @@ func main() {
 				case 'q':
 					break LOOP
 				case 'h':
-					table.Cx -= 1
+					table.Left()
 				case 'j':
-					table.Cy += 1
+					table.Down()
 				case 'k':
-					table.Cy -= 1
+					table.Up()
 				case 'l':
-					table.Cx += 1
+					table.Right()
+				case 'g':
+					table.Top()
+				case 'G':
+					table.Bottom()
+				default:
+					switch event.Key {
+						case termbox.KeyArrowLeft:
+							table.Left()
+						case termbox.KeyArrowDown:
+							table.Down()
+						case termbox.KeyArrowUp:
+							table.Up()
+						case termbox.KeyArrowRight:
+							table.Right()
+						case termbox.KeyHome:
+							table.Top()
+						case termbox.KeyEnd:
+							table.Bottom()
+					}
 				}
-
 			}
-
 		}
 	}
 }

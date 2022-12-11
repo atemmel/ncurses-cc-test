@@ -29,6 +29,8 @@ type Column struct {
 type Table struct {
 	Columns []Column
 	Cx, Cy int
+	yOffset int
+	w, h int
 }
 
 func makeTable(columns []Column) Table {
@@ -36,10 +38,15 @@ func makeTable(columns []Column) Table {
 		Columns: columns,
 		Cx: 0,
 		Cy: 0,
+		yOffset: 0,
+		w: 0,
+		h: 0,
 	}
 }
 
 func (t *Table) Draw(x, y, w, h int) {
+	t.w = w
+	t.h = h
 	n := len(t.Columns)
 	cw := w / n
 	for i, c := range t.Columns {
@@ -61,8 +68,12 @@ func (t *Table) DrawColumn(c *Column, x, y, w, h int, focused bool) {
 
 	line(x, y, w, bg, fg)
 
-	y += 1
-	for i, cell := range c.Cells {
+	y++
+	for i := t.yOffset; i < len(c.Cells); i++ {
+		if y >= t.h {
+			break
+		}
+		cell := &c.Cells[i]
 		mvprints(x, y, cell.Timestamp.Format(time.Stamp))
 		bg = termbox.ColorBlack
 		fg = termbox.ColorWhite
@@ -76,9 +87,73 @@ func (t *Table) DrawColumn(c *Column, x, y, w, h int, focused bool) {
 	}
 }
 
-func line(x, y, w int, bg, fg termbox.Attribute) {
-	for i := x; i < w; i++ {
-		termbox.SetBg(i, y, bg)
-		termbox.SetFg(i, y, fg)
+func (t *Table) Left() {
+	t.Cx -= 1
+	if t.Cx < 0 {
+		t.Cx = 0
 	}
+	t.fitCursor()
+}
+
+func (t *Table) Up() {
+	t.Cy -= 1
+	if t.Cy < 0 {
+		t.Cy = 0
+	}
+	if t.yOffset > t.Cy {
+		t.yOffset--
+	}
+}
+
+func (t *Table) Down() {
+	maxY := t.currColLen()
+	t.Cy += 1
+	reachedBottom := t.Cy >= maxY
+	if reachedBottom {
+		t.Cy = maxY - 1
+	}
+	if t.Cy + 2 >= t.h {
+		t.yOffset++
+		if reachedBottom {
+			t.yOffset--
+		}
+	}
+}
+
+func (t *Table) Right() {
+	maxX := len(t.Columns)
+	t.Cx += 1
+	if t.Cx >= maxX {
+		t.Cx = maxX - 1
+	}
+	t.fitCursor()
+}
+
+func (t *Table) Top() {
+	t.Cy = 0
+	t.yOffset = 0
+}
+
+func (t *Table) Bottom() {
+	maxY := t.currColLen()
+	t.Cy = maxY - 1
+	t.yOffset = 0
+	if t.Cy > t.h {
+		t.yOffset = t.h - 2
+	}
+	if t.Cy < 0 {
+		t.Cy = 0
+		t.yOffset = 0
+	}
+}
+
+func (t *Table) fitCursor() {
+	maxY := t.currColLen()
+	if t.Cy >= maxY {
+		t.Cy = maxY - 1
+	} 
+}
+
+func (t *Table) currColLen() int {
+	return len(t.Columns[t.Cx].Cells)
 }

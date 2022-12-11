@@ -30,3 +30,10 @@ func mvprints(x, y int, msg string) {
 		x += runewidth.RuneWidth(c)
 	}
 }
+
+func line(x, y, w int, bg, fg termbox.Attribute) {
+	for i := 0; i < w; i++ {
+		termbox.SetBg(i + x, y, bg)
+		termbox.SetFg(i + x, y, fg)
+	}
+}
